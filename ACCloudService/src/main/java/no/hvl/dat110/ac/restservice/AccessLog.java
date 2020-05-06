@@ -29,7 +29,6 @@ public class AccessLog {
 	public AccessEntry get(int id) {
 		AccessEntry retrievedEntry = log.get(id);
 		return retrievedEntry;
-		
 	}
 	
 	// TODO: clear the access entry log

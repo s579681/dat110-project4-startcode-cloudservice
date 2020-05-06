@@ -27,7 +27,6 @@ public class App {
 		}
 
 		// objects for data stored in the service
-		
 		accesslog = new AccessLog();
 		accesscode  = new AccessCode();
 		
@@ -40,55 +39,53 @@ public class App {
 			
 		 	Gson gson = new Gson();
 		 	
-		 	return gson.toJson("IoT Access Control Device");
+		 	return gson.toJson("IoT Access Control Device: /log, /log/:id, /code");
 		});
 		
 		// TODO: implement the routes required for the access control service
-		// as per the HTTP/REST operations described in in the project description
-		// record an access attempt by storing the log-message
-				post("/accessdevice/log/", (req, res) -> {
-					Gson gson = new Gson();
-					AccessMessage msg = gson.fromJson(req.body(), AccessMessage.class);
-					int id = accesslog.add(msg.getMessage());
+		// as per the HTTP/REST operations described in the project description
 
-					return gson.toJson(accesslog.get(id));
-				});
-
-				// returns a JSON-representation of all access log entries
-				get("/accessdevice/log/", (req, res) -> accesslog.toJson());
-
-
-				// returns a JSON-representation of the access log entries of the id
-				get("/accessdevice/log/:id", (req, res) -> {
-					Gson gson = new Gson();
-					int id = Integer.parseInt(req.params(":id"));
-
-					return gson.toJson(accesslog.get(id));
-				});
-
-				// updates the access code in the cloud service
-				put("/accessdevice/code", (req, res) -> {
-					Gson gson = new Gson();
-					AccessCode code = gson.fromJson(req.body(), AccessCode.class);
-					accesscode.setAccesscode(code.getAccesscode());
-
-					return gson.toJson(accesscode);
-				});
-
-				// returns current access code
-				get("/accessdevice/code", (req, res) -> {
-					Gson gson = new Gson();
-
-					return gson.toJson(accesscode);
-				});
-
-				// deletes all entries in the access log and returns empty log
-				delete("/accessdevice/log/", (req, res) -> {
-					accesslog.clear();
-
-					return accesslog.toJson();
-				});
+		
+		//Retur av tilgangs log som JSON, består av alle bruker forsøk
+		get("/accessdevice/log/", (req, res) -> accesslog.toJson());
 				
-		    }
+			
+		//Returnerer JSON av spesefikke log adganger, basert på .../log/:id
+		get("/accessdevice/log/:id", (req, res) -> {
+			Gson gson = new Gson();						 //Oppretter GSON objekt
+			int id = Integer.parseInt(req.params(":id"));//henter ut id parameter verdi sendt i HTTP request
+			return gson.toJson(accesslog.get(id));       //Retur av adgangsforsøk som JSON basert på id
+		});		
+		
+		//Legger inn et tilgangsforsøk i loggen
+		post("/accessdevice/log/", (req, res) -> {
+			Gson gson = new Gson();											     //oppretter GSON
+			AccessMessage msg = gson.fromJson(req.body(), AccessMessage.class); //gjør om msg til gson
+			int id = accesslog.add(msg.getMessage());						    //legger til msg i accesslog og returnerer innsettings id
+			return gson.toJson(accesslog.get(id));                              //gjør om int id til JSON ra gson
+		});
+		
+		// deletes all entries in the access log and returns empty log
+		//sletter loggen og gir en tom log i retur
+		delete("/accessdevice/log/", (req, res) -> {
+			accesslog.clear();
+			return accesslog.toJson();
+		});
+		
+		//Bruker HTTP PUT for å oppdatere tilgangs-koden
+		put("/accessdevice/code", (req, res) -> {
+			Gson gson = new Gson();										  //Oppretter GSON
+			AccessCode code = gson.fromJson(req.body(), AccessCode.class);//Henter ut kode fra HTTP request-body, gjør om inngangs-kode GSON
+			accesscode.setAccesscode(code.getAccesscode());				 //setter ny access code
+			return gson.toJson(accesscode);								 //Retur av ny accesscode som JSON
+		});
+
+		//eturnerer tilgangskoden som ble sendt med PUT
+		get("/accessdevice/code", (req, res) -> {
+			Gson gson = new Gson();
+			return gson.toJson(accesscode);
+		});
+		
+    }
     
 }
